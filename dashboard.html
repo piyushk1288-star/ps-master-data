@@ -4,9 +4,22 @@
 <meta charset="UTF-8">
 <title>Data Download Portal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
-body { font-family: Arial, sans-serif; padding: 20px; }
-h2 { margin-bottom: 10px; }
+body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  background: #f7f9fc;
+}
+
+h2 {
+  margin-bottom: 10px;
+}
+
+p {
+  margin-bottom: 20px;
+}
+
 button {
   width: 100%;
   max-width: 420px;
@@ -17,22 +30,64 @@ button {
   color: white;
   border: none;
   border-radius: 6px;
+  cursor: pointer;
 }
-button:hover { background:#125aa0; }
+
+button:hover {
+  background: #125aa0;
+}
+
+.logout {
+  background: #d32f2f;
+}
+
+.logout:hover {
+  background: #9a0007;
+}
+
+.container {
+  max-width: 600px;
+  margin: auto;
+}
 </style>
+
+<!-- 🔐 LOGIN PROTECTION -->
+<script>
+if (sessionStorage.getItem("login") !== "yes") {
+  window.location.href = "index.html";
+}
+</script>
+
 </head>
 <body>
 
-<h2>📂 Data Download Portal</h2>
-<p>Kripya jis data ka download chahiye, us par click karein:</p>
+<div class="container">
 
-<button onclick="location.href='ps-master.html'">
-📊 PS Master Data Download
-</button>
+  <h2>📂 Data Download Portal</h2>
+  <p>Kripya jis data ka download chahiye, us par click karein:</p>
 
-<button onclick="location.href='upcsc-potential.html'">
-📈 UPCSC Potential Opportunity Download
-</button>
+  <button onclick="location.href='ps-master.html'">
+    📊 PS Master Data Download
+  </button>
+
+  <button onclick="location.href='upcsc-potential.html'">
+    📈 UPCSC Potential Opportunity Download
+  </button>
+
+  <hr style="margin:25px 0;">
+
+  <button class="logout" onclick="logout()">
+    🔒 Logout
+  </button>
+
+</div>
+
+<script>
+function logout() {
+  sessionStorage.removeItem("login");
+  window.location.href = "index.html";
+}
+</script>
 
 </body>
 </html>
