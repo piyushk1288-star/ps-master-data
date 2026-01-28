@@ -4,7 +4,24 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PS Master Data Filter</title>
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js">
+function downloadExcel(){
+  if(typeof XLSX === 'undefined'){
+    alert('XLSX library not loaded');
+    return;
+  }
+  let out = data.map((row,i)=>{
+    let r = Object.assign({}, row);
+    r.SN = i+1;
+    return r;
+  });
+  let ws = XLSX.utils.json_to_sheet(out);
+  let wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "PS Master");
+  XLSX.writeFile(wb, "PS_Master_Data.xlsx");
+}
+
+</script>
 <style>
 body{font-family:Arial;margin:10px}
 h3{text-align:center}
