@@ -29,7 +29,12 @@ select,button{padding:8px;margin:6px;width:100%;max-width:420px}
 <select id="status"><option value="">All</option></select>
 
 <label>Renewal Status</label>
-<select id="renewal"><option value="">All</option></select>
+<select id="renewal">
+  <option value="">All</option>
+  <option value="Done">Done</option>
+  <option value="Pending">Pending</option>
+  <option value="Not Due">Not Due</option>
+</select>
 
 <button id="downloadBtn">Download Excel</button>
 </div>
@@ -40,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   const keys = Object.keys(data[0]);
   const districtKey = keys.find(k => k.toLowerCase().includes('district'));
-  const blockKey = keys.find(k => k.toLowerCase().includes('gp') || k.toLowerCase().includes('block'));
+  const blockKey = keys.find(k => k.toLowerCase().includes('block'));
   const paidKey = keys.find(k => k.toLowerCase().includes('paid'));
   const statusKey = keys.find(k => k.toLowerCase().includes('status') && !k.toLowerCase().includes('renewal'));
   const renewalKey = keys.find(k => k.toLowerCase().includes('renewal'));
@@ -51,6 +56,14 @@ document.addEventListener('DOMContentLoaded', function() {
   const status = document.getElementById('status');
   const renewal = document.getElementById('renewal');
 
+  function normalizeRenewal(v){
+    if(!v) return '';
+    v = v.toString().toLowerCase();
+    if(v === 'done') return 'Done';
+    if(v === 'pending') return 'Pending';
+    return 'Not Due';
+  }
+
   function uniq(arr) { return [...new Set(arr.filter(v => v))]; }
 
   function fillDistrict(){
@@ -60,39 +73,40 @@ document.addEventListener('DOMContentLoaded', function() {
   function fillBlocks(){
     block.innerHTML='';
     const dVal = district.value;
-    const blocks = data
-      .filter(d => !dVal || d[districtKey] === dVal)
-      .map(d => d[blockKey]);
-    uniq(blocks).forEach(v=>block.innerHTML+=`<option value="${v}">${v}</option>`);
+    uniq(data.filter(d=>d[districtKey]===dVal).map(d=>d[blockKey]))
+      .forEach(v=>block.innerHTML+=`<option value="${v}">${v}</option>`);
   }
 
   function fillOthers(){
     uniq(data.map(d=>d[paidKey])).forEach(v=>paid.innerHTML+=`<option>${v}</option>`);
     uniq(data.map(d=>d[statusKey])).forEach(v=>status.innerHTML+=`<option>${v}</option>`);
-    uniq(data.map(d=>d[renewalKey])).forEach(v=>renewal.innerHTML+=`<option>${v}</option>`);
   }
 
-  function getSelectedOptions(select){
-    return Array.from(select.selectedOptions).map(o=>o.value);
+  function selectedValues(sel){
+    return Array.from(sel.selectedOptions).map(o=>o.value);
   }
 
   function filtered(){
-    const dVal = district.value;
-    const bVals = getSelectedOptions(block);
-    return data.filter(d =>
-      (!dVal || d[districtKey]===dVal) &&
-      (bVals.length===0 || bVals.includes(d[blockKey])) &&
+    const blocks = selectedValues(block);
+    return data.filter(d=>
+      d[districtKey]===district.value &&
+      (blocks.length===0 || blocks.includes(d[blockKey])) &&
       (!paid.value || d[paidKey]===paid.value) &&
       (!status.value || d[statusKey]===status.value) &&
-      (!renewal.value || d[renewalKey]===renewal.value)
+      (!renewal.value || normalizeRenewal(d[renewalKey])===renewal.value)
     );
   }
 
-  document.getElementById('downloadBtn').onclick = function() {
+  document.getElementById('downloadBtn').onclick = function(){
     const out = filtered().map((row,i)=>{
       const r={};
       r['SN']=i+1;
-      for(let k in row) r[k]=row[k];
+      for(let k in row){
+        if(k.toLowerCase().includes('renewal'))
+          r[k]=normalizeRenewal(row[k]);
+        else
+          r[k]=row[k];
+      }
       return r;
     });
     const ws = XLSX.utils.json_to_sheet(out);
